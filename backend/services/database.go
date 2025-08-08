@@ -11,6 +11,10 @@ import (
 
 var DB *gorm.DB
 
+func SetTestDB(db *gorm.DB) {
+	DB = db
+}
+
 func ConnectDatabase() {
 	dsn := "host=db user=user password=password dbname=library_db port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	database, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})

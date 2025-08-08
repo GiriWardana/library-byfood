@@ -22,12 +22,19 @@ const HomePage: React.FC = () => {
     author: "",
     year: 0,
   });
+  const [formErrors, setFormErrors] = useState({
+    title: false,
+    author: false,
+    year: false,
+  });
+
   const apiUrl = nextConfig?.env?.NEXT_PUBLIC_API_URL;
-  console.log("🚀 ~ HomePage ~ apiUrl:", apiUrl)
 
   const [editBook, setEditBook] = useState<Book | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<Book | null>(null);
   const [deleteConfirmInput, setDeleteConfirmInput] = useState("");
+  const [showAddModal, setShowAddModal] = useState(false);
+
 
   useEffect(() => {
     fetch(`${apiUrl}/books`)
@@ -37,6 +44,14 @@ const HomePage: React.FC = () => {
   }, [setBooks]);
 
   const handleCreate = () => {
+    const errors = {
+      title: newBook.title.trim() === "",
+      author: newBook.author.trim() === "",
+      year: newBook.year <= 0,
+    };
+
+    setFormErrors(errors);
+  
     if (!newBook.title || !newBook.author || !newBook.year) {
       showToast("All fields are required.", "error");
       return;
@@ -54,7 +69,9 @@ const HomePage: React.FC = () => {
         }
         setBooks((prev) => [...prev, data]);
         setNewBook({ title: "", author: "", year: 0 });
+        setFormErrors({ title: false, author: false, year: false });
         showToast("Book created successfully!", "success");
+        setShowAddModal(false);
       })
       .catch((err) => {
         console.error("Error creating book:", err);
@@ -62,6 +79,14 @@ const HomePage: React.FC = () => {
   };
 
   const handleEditSubmit = () => {
+    const errors = {
+      title: editBook?.title.trim() === "",
+      author: editBook?.author.trim() === "",
+      year: editBook?.year == 0,
+    };
+
+    setFormErrors(errors);
+
     if (!editBook) return;
     fetch(`${process.env.NEXT_PUBLIC_API_URL}/books/${editBook.id}`, {
       method: "PUT",
@@ -76,6 +101,7 @@ const HomePage: React.FC = () => {
         }
         setBooks((prev) => prev.map((book) => (book.id === data.id ? data : book)));
         setEditBook(null);
+        setFormErrors({ title: false, author: false, year: false });
         showToast("Book updated successfully!", "success");
       })
 
@@ -103,37 +129,13 @@ const HomePage: React.FC = () => {
     <div className="max-w-4xl mx-auto p-6">
       <h1 className="text-3xl font-bold mb-6 text-center text-gray-800">📚 Book Manager</h1>
 
-      {/* Add Book Form */}
-      <div className="bg-white p-6 rounded-lg shadow mb-8">
-        <h2 className="text-xl font-semibold mb-4 text-gray-700">Add New Book</h2>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input
-            type="text"
-            placeholder="Title"
-            value={newBook.title}
-            onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
-            className="border border-gray-300 rounded px-4 py-2"
-          />
-          <input
-            type="text"
-            placeholder="Author"
-            value={newBook.author}
-            onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
-            className="border border-gray-300 rounded px-4 py-2"
-          />
-          <input
-            type="number"
-            placeholder="Year"
-            value={newBook.year}
-            onChange={(e) => setNewBook({ ...newBook, year: Number(e.target.value) })}
-            className="border border-gray-300 rounded px-4 py-2"
-          />
-        </div>
+      {/* Button to trigger Add Book Modal */}
+      <div className="flex justify-end mb-6">
         <button
-          onClick={handleCreate}
-          className="mt-4 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded"
+          onClick={() => setShowAddModal(true)}
+          className="bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-6 rounded"
         >
-          Add Book
+          + New Book
         </button>
       </div>
 
@@ -193,18 +195,24 @@ const HomePage: React.FC = () => {
               onChange={(e) => setEditBook({ ...editBook, title: e.target.value })}
               className="mb-3 w-full border border-gray-300 rounded px-4 py-2"
             />
+            {formErrors.title && <p className="text-red-500 text-sm mb-2">Title is required.</p>}
+
             <input
               type="text"
               value={editBook.author}
               onChange={(e) => setEditBook({ ...editBook, author: e.target.value })}
               className="mb-3 w-full border border-gray-300 rounded px-4 py-2"
             />
+            {formErrors.author && <p className="text-red-500 text-sm mb-2">Author is required.</p>}
+
             <input
               type="number"
               value={editBook.year}
               onChange={(e) => setEditBook({ ...editBook, year: Number(e.target.value) })}
               className="mb-4 w-full border border-gray-300 rounded px-4 py-2"
             />
+            {formErrors.year && <p className="text-red-500 text-sm mb-2">Year is required and must be a positive number.</p>}
+
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setEditBook(null)}
@@ -262,6 +270,62 @@ const HomePage: React.FC = () => {
           </div>
         </div>
       )}
+
+      {/* Add Book Modal */}
+      {showAddModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg p-6 w-full max-w-md">
+            <h2 className="text-xl font-bold mb-4 text-gray-700">Add New Book</h2>
+            <input
+              type="text"
+              placeholder="Title"
+              value={newBook.title}
+              onChange={(e) => setNewBook({ ...newBook, title: e.target.value })}
+              className="mb-3 w-full border border-gray-300 rounded px-4 py-2"
+            />
+            {formErrors.title && <p className="text-red-500 text-sm mb-2">Title is required.</p>}
+
+            <input
+              type="text"
+              placeholder="Author"
+              value={newBook.author}
+              onChange={(e) => setNewBook({ ...newBook, author: e.target.value })}
+              className="mb-3 w-full border border-gray-300 rounded px-4 py-2"
+            />
+            {formErrors.author && <p className="text-red-500 text-sm mb-2">Author is required.</p>}
+
+            <input
+              type="number"
+              placeholder="Year"
+              value={newBook.year}
+              onChange={(e) => setNewBook({ ...newBook, year: Number(e.target.value) })}
+              className="mb-4 w-full border border-gray-300 rounded px-4 py-2"
+            />
+            {formErrors.year && <p className="text-red-500 text-sm mb-2">Year is required and must be a positive number.</p>}
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => {
+                  setShowAddModal(false);
+                  setNewBook({ title: "", author: "", year: 0 });
+                }}
+                className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  handleCreate();
+                }}
+                className="px-4 py-2 rounded bg-blue-600 hover:bg-blue-700 text-white"
+              >
+                Add Book
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
     </div>
   );
 };
