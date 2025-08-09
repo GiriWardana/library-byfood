@@ -16,6 +16,9 @@ cd ../
 sudo docker compose -f docker-compose-dev.yaml up
 open http://localhost:3000
 
+## API Documentation
+http://localhost:8080/swagger/index.html
+
 ## Test Backend Go (ensure use go 1.23.12)
 cd backend
 go test ./...
