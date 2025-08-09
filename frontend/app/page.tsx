@@ -215,7 +215,10 @@ const HomePage: React.FC = () => {
 
             <div className="flex justify-end gap-3">
               <button
-                onClick={() => setEditBook(null)}
+                onClick={() => {
+                  setEditBook(null);
+                  setFormErrors({ title: false, author: false, year: false });
+                }}
                 className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
               >
                 Cancel
@@ -308,6 +311,7 @@ const HomePage: React.FC = () => {
                 onClick={() => {
                   setShowAddModal(false);
                   setNewBook({ title: "", author: "", year: 0 });
+                  setFormErrors({ title: false, author: false, year: false });
                 }}
                 className="px-4 py-2 rounded bg-gray-300 hover:bg-gray-400"
               >

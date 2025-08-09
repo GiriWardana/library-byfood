@@ -4,6 +4,7 @@ node 20 (if you wanna do faster development, skip if just running on production,
 
 ## For Production
 sudo docker compose up --build
+open http://localhost:3000
 
 ## For Development (faster developement)
 ### use node 20
@@ -13,6 +14,11 @@ yarn install
 yarn dev
 cd ../
 sudo docker compose -f docker-compose-dev.yaml up
+open http://localhost:3000
+
+## Test Backend Go (ensure use go 1.23.12)
+cd backend
+go test ./...
 
 ## [Install Docker Tutorial]
 sudo apt update
